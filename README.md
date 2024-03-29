@@ -1,10 +1,11 @@
+
 # PyStreamSaver
 
-**Total Time Invested:** `46hours`\
-**Author:** `akhand raj`\
-**contact info:** [instagram](https://www.instagram.com/its_just_me_akk) or [personal-instagram](https://www.instagram.com/akki_raj_._)\
-**MAIL:** [email me](:akhandraj764@gmal.com)\
-**Status:** Under Devlopment
+**Total Time Invested:** `46 hours`\
+**Author:** `Akhand Raj`\
+**Contact Info:** [Instagram](https://www.instagram.com/its_just_me_akk)   and  [Personal Instagram](https://www.instagram.com/akki_raj_._)\
+**Email:** [Email Me](mailto:akhandraj764@gmail.com)\
+**Status:** Under Development
 
 ## About the code
 
