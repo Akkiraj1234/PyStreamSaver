@@ -1,6 +1,5 @@
 from mutagen.id3 import ID3,APIC,TIT2,TPE1,TALB
 from PIL import Image
-from termcolor import colored
 from tempfile import NamedTemporaryFile
 from io import BytesIO
 import subprocess
@@ -12,18 +11,131 @@ from youtube import YOUTUBE
 default_path='C:\\Users\\DELL\\Desktop\\side project'
 ffmpeg_path='C:\\ffmpeg\\ffmpeg-2024-03-11-git-3d1860ec8d-full_build\\bin\\ffmpeg.exe'
 
-#functions for getting helping:)
-def custom_progress_bar(current, total, length=60):
+def logo(clear:bool=True,stop:bool=False)->str:
+    '''
+    this function print the logo for the script
+    
+    Parameters:
+    - clear = True|False : if true
+    then clear the terminal then print the logo \n
+    - stop = True|False : if true 
+    then after printing the logo it's ask for input(enter)
+    before printing anything.
+    
+    return:
+    - str: formated logo of this project by setting we made by Parameters
+    '''
+    os.system('cls') if clear else None
+    print(
+        colored ("         |=|           \n",'blue')
+        +colored("         |=|          \n",'blue')
+        +colored("      ___|=|___\n",'blue')
+        +colored("      \\\\=====//",'blue')+colored("  Downloader\n",'yellow')
+        +colored("       \\\\===// ",'blue')+colored("  By--------\n",'yellow')
+        +colored("        \\\\=//  ",'blue')+colored("  AKKI------\n",'yellow')
+        )
+    _=input(colored('enter to continue ','blue')) if stop else None
+    
+    
+def colored(string,color)->str:
+    """
+    Return the input string with specified color in ANSI escape sequence.
+
+    Parameters:
+    - string (str): The input string to be colored.
+    - color (str): The color name. Supported color names are 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white', and 'reset'.
+
+    Returns:
+    - str: The input string wrapped in ANSI escape sequence for the specified color.
+
+    Example:
+    >>> colored("Hello, world!", "blue")
+    '\x1b[34mHello, world!\x1b[0m'
+    """
+    colors = {
+        'red': '\x1b[31m',
+        'green': '\x1b[32m',
+        'yellow': '\x1b[33m',
+        'blue': '\x1b[34m',
+        'purple': '\x1b[35m',
+        'cyan': '\x1b[36m',
+        'white': '\x1b[37m',
+        'reset': '\x1b[0m'
+    }
+    # Color escape sequences are added before the string and default to white color at the end (\x1b[0m).
+    color_code=colors.get(color.lower(),'\x1b[0m')
+    return f"{color_code}{string}\x1b[0m"
+
+
+def custom_progress_bar(current, total, length=60)->str:
+    """
+    Prints a textual progress bar based on the current downloaded bytes, total downloadable bytes,
+    and the length of the progress bar.
+
+    Parameters:
+        current (int): The current downloaded bytes.
+        total (int): The total downloadable bytes.
+        length (int): The length of the progress bar.
+        colored (callable): A function for coloring text.
+    """
+    # The completed progress is represented by '=' characters * 'blocks_completed' times, followed by spaces for the remaining length.
+    # The progress bar is updated in-place using '\r', and printed along with the formatted percentage and used colored to color text.
     progress = current / total
-    num_blocks = int(progress * length)
-    bar = colored('[','yellow') + colored('=','blue') * num_blocks+colored('>','yellow') + ' ' * (length - num_blocks-1) + colored(']','yellow')
+    blocks_compleated = int(progress * length)
+    bar = colored('[','yellow') + colored('=','blue') * blocks_compleated-1+colored('>','yellow') + ' ' * (length - blocks_compleated) + colored(']','yellow')
     percentage = colored('{:.0%}'.format(progress),'blue')
     print('\r' + bar + ' ' + percentage, end='', flush=True)
-    # sys.stdout.write('\r' + bar + ' ' + percentage)
-    # sys.stdout.flush()
+
+
+
+def valid_name(name:str)->str:
+    '''this function takes string as an argument and return string that is valid for making file and dir in the window'''
+    return ''.join(a if not a in '<>:"/\\|?*' else '_' for a in name)
+
+
+
+def valid_path_name(dir_path,name:str)->str:
+    '''This func return valid name for maiking file in window if name already exists modify the name and return it\n
+    takes dir path and name of file +.extention of file as argument'''
+    name,extention=valid_name(name).rsplit('.', 1)
+    number=1
+    extra=''
+    while os.path.exists(dir_path+'\\'+name+extra+'.'+extention):
+        extra=f'({number})'
+        number+=1
+    return dir_path+'\\'+name+extra+'.'+extention
+
+def valid_dir_name(dir_path:str,name:str)->str:
+    '''this function return valid name for making dir in window if name already exists modify the name and returun it\n
+    takes dir_path and name of dir u wanna make as an argumnet'''
+    name=valid_name(name)
+    extra=''
+    number=1
+    while os.path.exists(dir_path+'\\'+name+extra):
+        extra=f'({number})'
+        number+=1
+    return dir_path+'\\'+name+extra
+
+def crop_center_square(image_path)->bytes:
+    """
+    Crop the image to center it on a 1:1 aspect ratio.
+
+    Parameters:
+    - image_path (str): The path to the image file.
+
+    Returns:
+    - bytes: The cropped image data in bytes format.
+
+    Example:
+    >>> cropped_image_bytes = crop_center_square("image.jpg")
+
+    Note:
+    - This function crops the image to make it a square by taking the larger dimension (width or height) and
+      cropping from the center to achieve a 1:1 aspect ratio.
+    - The input image should be in JPEG format.
     
-def crop_center_square(image_path):
-    '''crop image to center on 1:1 ratio writen by chat-gpt :)'''
+    -writen by chat gpt 3.5 
+    """
     with open(image_path,'rb')as f:
         image_data=f.read()
     img = Image.open(BytesIO(image_data))
@@ -38,67 +150,89 @@ def crop_center_square(image_path):
     img.save(output_buffer, format='JPEG')
     image_bytes = output_buffer.getvalue()
     return image_bytes
-
-def logo(clear:bool=True,stop:bool=False):
-    '''this function print the logo of this script'''
-    os.system('cls') if clear else None
-    print(colored("         |=|           \n",'blue')
-        +colored("         |=|          \n",'blue')
-        +colored("      ___|=|___\n",'blue')
-        +colored("      \\\\=====//",'blue')+colored("  Downloader\n",'yellow')
-        +colored("       \\\\===// ",'blue')+colored("  By--------\n",'yellow')
-        +colored("        \\\\=//  ",'blue')+colored("  AKKI------\n",'yellow'))
-    _=input(colored('enter to continue ','blue')) if stop else None
     
-def get_size(content_length):
-    content_length_bytes = int(content_length)
-    if content_length_bytes >= 1073741824:
-        return f"{content_length_bytes / 1073741824:.2f} GB"
-    elif content_length_bytes >= 1048576:
-        return f"{content_length_bytes / 1048576:.2f} MB"
-    elif content_length_bytes >= 1024:
-        return f"{content_length_bytes / 1024:.2f} KB"
+    
+def get_size(content_length)->str:
+    """
+    Converts the given content_length (in bytes) into a human_readable format.
+    
+    Parameters:
+    - content_length (int): The length of content in bytes.
+    
+    Returns: 
+    - str: A string representing the content length in a human-readable format,
+    with units (bytes, KB, MB, GB).
+           
+    Example:
+    >>> get_size(123456789)
+    '117.74 MB'
+    """
+    content_length=int(content_length)
+    if content_length >= 1073741824:
+        return f"{content_length / 1073741824:.2f} GB"
+    elif content_length >= 1048576:
+        return f"{content_length / 1048576:.2f} MB"
+    elif content_length >= 1024:
+        return f"{content_length / 1024:.2f} KB"
     else:
-        return f"{content_length_bytes} bytes"
+        return f"{content_length} bytes"
     
-def sec_to_min_to_hours(sec):
-    '''this func return time in min or hours by sec'''
+def sec_to_min_to_hours(sec)->str:
+    '''
+    Convert time in seconds to minutes or hours.
+
+    Parameters:  sec (int): Time duration in seconds.
+
+    Returns: (str) The time duration converted to minutes or hours, formatted accordingly.
+
+    Example:
+    >>> sec_to_min_to_hours(3600)
+    '1.00 hours'
+    '''
     min=float(sec)/60
     if min<60:time='%.2f min'%min
     else:time='%.2f hours'%(float(min)/60)
     return time
 
-def valid_name(name:str):
-    return ''.join(a if not a in '<>:"/\\|?*' else '_' for a in name)
-def valid_path_name(dir_path,name:str):
-    '''This func return valid name for maiking file in window'''
-    number=1
-    extra=''
-    name,extention=valid_name(name).rsplit('.', 1)
-    while os.path.exists(dir_path+'\\'+name+extra+'.'+extention):
-        extra=f'({number})'
-        number+=1
-    return dir_path+'\\'+name+extra+'.'+extention
-def valid_dir_name(dir_path:str,name:str):
-    name=valid_name(name)
-    extra=''
-    number=1
-    while os.path.exists(dir_path+'\\'+name+extra):
-        extra=f'({number})'
-        number+=1
-    return dir_path+'\\'+name+extra
-
 def add_audio_to_video(video_path, audio_path,ffmpeg_path,output_path):
-    '''This code will add audio to a video using ffmpeg'''
-    # command = [ffmpeg_path,'-i', video_path,'-i', audio_path,'-c:v', 'copy','-c:a', 'aac','-strict', 'experimental','-map', '0:v:0','-map', '1:a:0','-shortest',output_path]
+    """
+    Add audio to a video using ffmpeg.
+
+    Parameters:
+    - video_path (str): The path to the input video file.
+    - audio_path (str): The path to the input audio file.
+    - ffmpeg_path (str): The path to the ffmpeg executable.
+    - output_path (str): The path to save the output video file.
+    """
     command = [ffmpeg_path,'-i', video_path,'-i', audio_path,'-c:v', 'copy','-c:a', 'aac','-strict', 'experimental',output_path]
     subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
 def convert_audio(input_file, output_file, ffmpeg_path):
-    '''convert audio to other format takes input file (file type object containg audio info or bytes) output file (output file where convertion will save ) ffmpeg path(path to ffmpeg :0) '''
+    """
+    Convert audio to another format using ffmpeg.
+
+    Parameters:
+    - input_file (str or bytes): The input audio file path or bytes data.
+    - output_file (str): The path to save the converted audio file.
+    - ffmpeg_path (str): The path to the ffmpeg executable.
+    """
     command = [ffmpeg_path, '-i', input_file, '-codec:a', 'libmp3lame', output_file]
     subprocess.run(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 def add_cover_in_music(audio_file_path, title, artist, cover_photo_url,):
     '''this will add image in audio file and more meta info like title artist and album'''
     response = requests.get(cover_photo_url)
@@ -117,13 +251,14 @@ def add_cover_in_music(audio_file_path, title, artist, cover_photo_url,):
         os.unlink(temp_file.name)
     else:print(colored('failed to add cover art ','red'))
     
-def download_file_with_resume(url, filename, downloaded_bytes=0):
+def download_file_with_resume(url, filename, retry=1):
+    downloaded_bytes=0
+    while retry!=0:break
+    headers = {'Range': f'bytes={downloaded_bytes}-'}
+    response = requests.get(url, headers=headers, stream=True)
+    total_size = int(response.headers.get('content-length', 0))
+    custom_progress_bar(downloaded_bytes, total_size)
     try:
-        headers = {'Range': f'bytes={downloaded_bytes}-'}
-        response = requests.get(url, headers=headers, stream=True)
-        total_size = int(response.headers.get('content-length', 0))
-        custom_progress_bar(downloaded_bytes, total_size)
-
         with open(filename, 'ab') as f:
             for chunk in response.iter_content(chunk_size=4096):
                 if not chunk: continue
@@ -148,9 +283,28 @@ def handeking_error_while_downloading_music(dict1,quality:str,mime_type,output_p
 
 #youtube_functions_for_help_to_download :)
 def get_video_info(youtube_onj:YOUTUBE)->dict|None:
+    '''gather the video info from YOUTUBE.youtube.streaming_data() and store them in 
+    a dict and return the dict takes youtube_obj as an arguemnt
+    
+    PARAMETERS:
+    - takes youtube obj as an argument
+    
+    RETURNS: 
+    - returns a dict by gathering info from streming data 
+    
+    STRUCTURE OF DICT
+    >>> dict1={'video':{'audio_aviable':{},'mp4':{},'webm':{}},'music':{'mp3':{},'opus':{}}}
+    
+    EXAMPLE: 
+    >>> from youtube import YOUTUBE
+    >>> youtube_obj=YOUTUBE("www.youtube.com/watch=?123ertfdd")
+    >>> dict1= get_video_info(youtube_obj)
+    '''
     streaming_data=youtube_onj.YouTube.streaming_data()
     if streaming_data is None:return None
-    if streaming_data['formats'][0].get('url',None)==None:return None
+    # trying to gather 'url' from streaming_data becouse if youtube content is 18+
+    # link came encoded with there token so we can't gather 'url' will return none
+    if streaming_data['formats'][0].get('url',None) is None:return None
     
     dict1={'video':{'audio_aviable':{},'mp4':{},'webm':{}},'music':{'mp3':{},'opus':{}}}
     for data in streaming_data['formats']:
@@ -170,46 +324,105 @@ def get_video_info(youtube_onj:YOUTUBE)->dict|None:
             dict1['music']['opus'].update({data['contentLength']:(data['url'],data['audioQuality'])})
     return dict1
 
-def get_video_link_by_resulation(dict1,resulation,mime_type='mp4'):
-    list_of_resulation=('2160p60','2160p','1440p60','1440p','1080p60','1080p','720p60','720p','480p60','480p','360p','240p','144p')
-    mime_type='mp4'if mime_type not in ('mp4','webm') else mime_type
-    resulation='360p' if resulation not in list_of_resulation else resulation
+def get_video_link_by_resulation(dict1,resulation,mime_type='mp4')->tuple|None:
+    '''
+    Returns the video link by given resolution and MIME type. If the provided resolution is not available,
+    it tries to return the closest available resolution. If no suitable video link is found, returns None.
     
+    PARAMETER: 
+    - dict1 : Takes a dictionary containing streaming data info. Example:
+              dict1 = get_video_info(python_obj)
+    - resolution : Specifies the resolution of the video. Provide resolutions in the format: '2160p60', '2160p', 
+                   '1440p60', '1440p', '1080p60', '1080p', '720p60', '720p', '480p60', '480p', '360p', '240p', '144p'.
+    - mime_type : Specifies the MIME type of the video. If MIME type is not valid or not in the list ('mp4', 'webm'), 
+                  it will default to 'mp4'.
+    
+    RETURN: 
+    - tuple: Tuple containing the link of the video, a boolean indicating whether audio is merged with video, 
+             the actual resolution of the video, and the MIME type. Returns None if no suitable video link is found.
+    
+    STRUCTURE:
+    >>> tuple_containing = (('url' : str , 'contentLength' : str),'audio_merged': bool, 'resolution': str, 'mime_type': str)
+    
+    EXAMPLE:
+    >>> dict1 = get_video_info(youtube_obj)
+    >>> link = get_video_link_by_resolution(dict1, '720p')
+    >>> request.get(link[0][0])
+    '''
+    list_of_resulation=('2160p60','2160p','1440p60','1440p','1080p60','1080p','720p60','720p','480p60','480p','360p','240p','144p')
+    mime_type='mp4'if mime_type not in ('mp4','webm') else mime_type #changing if not giving curectly
+    resulation='360p' if resulation not in list_of_resulation else resulation# changing if not provided curectly
+   
+    # Adjusting MIME type based on availability in the provided data (if not able to get mime type change it to mp3 if it was webm and if webm then mp3)
     mime_type = mime_type if dict1['video'].get(mime_type) is not None else 'mp4' if mime_type == 'webm' else 'webm'
+    
+    #checking if webm is availbale or not if not checking for audio_aviableity is available or not if not then set default data becouse 'mp3' 360p data will alway be collected
     if dict1['video'][mime_type]is None:
         if dict1['video']['audio_aviable'] is None:return None
         else:mime_type='mp4';resulation='360p'
     
+    #trying get data which have audio if resualtion 360p or 720p selected
     if mime_type=='mp4' and (resulation=='360p' or resulation=='720p'):
         data=dict1['video']['audio_aviable'].get(resulation)
         if data is not None:return data,True,resulation,mime_type
-        
+    
+    # trying to gather data if above is turns falase or else resualtion differnt check both possiblity exaple 720p or 720p60
     for i in (resulation+'60',resulation):
         data=dict1['video'][mime_type].get(i)
         if data is not None:return data,False,i,mime_type
     
+    #at last trying to get any lower resualtion that availabe in dict1 by going true each value in list_of_resulation andn at last if not found any return  none
     list_of_resulation=list_of_resulation[list_of_resulation.index(resulation):]
     for i in list_of_resulation:
         data=dict1['video'][mime_type].get(i)
         if data is not None:return data,False,i,mime_type
     return None
 
-def get_audio_link_quality(dict1,quality:str,mime_type):
+def get_audio_link_quality(dict1,quality:str,mime_type)->tuple|None:
+    '''
+    Returns a tuple containing audio link and audio quality by given parameters. 
+    If the audio link does not match the given parameter, it tries to return lower quality.
+    
+    PARAMETER: 
+    - dict1 : Takes a dictionary containing streaming data info. Example:
+              dict1 = get_video_info(python_obj)
+    - quality : Takes quality as argument in given options:
+                1 for lowest, 2 for medium, and 3 for higher.
+    - mime_type : Specifies the MIME type of the video you want to get. If MIME type is not valid
+                  or not in the list, it will default to mp4.
+    
+    RETURN: 
+    - tuple: Tuple containing link of the video and audio quality, else None
+    
+    STRUCTURE:
+    >>> tuple_containing = ('url': str, 'audio_quality': str)
+    
+    EXAMPLE:
+    >>> dict1 = get_video_info(youtube_obj)
+    >>> link = get_audio_link_quality(dict1, '2', 'mp3')
+    >>> request.get(link[0])
+    '''
     quality_list=('1','2','3')
+    # Set default value in valriables if not in the valid options
     quality='3' if quality not in quality_list else quality
     mime_type='mp3' if mime_type not in ('mp3','opus') else mime_type
     
-    if mime_type not in dict1['music'] or dict1['music'][mime_type] is None:
-        mime_type= 'opus' if mime_type=='mp3' else 'mp3'
-    data = sorted(map(int, dict1['music'][mime_type].keys()))
+    # Ensure MIME type is available in the data
+    mime_type = 'opus' if mime_type == 'mp3' and mime_type not in dict1['music'] else 'mp3'
     
-    if quality=='1':
-        return dict1['music'][mime_type][str(data[0])]
-    if quality=='3':
-        return dict1['music'][mime_type][str(data[-1])]
-    if quality=='2':
-        return dict1['music'][mime_type][str(data[int(len(data)/2)])]
-            
+    # Retrieve the available quality levels and select the appropriate audio quality
+    audio_data = dict1['music'].get(mime_type)
+    if audio_data:
+        quality_levels = sorted(map(int, audio_data.keys()))
+        if quality == '1':
+            return audio_data[str(quality_levels[0])]
+        if quality == '2':
+            return audio_data[str(quality_levels[len(quality_levels) // 2])]
+        if quality == '3':
+            return audio_data[str(quality_levels[-1])]
+    return None
+
+
 def youtube_dowloader():
     def audio_downloader():
         logo(stop=False,clear=True)
@@ -440,7 +653,8 @@ def main():
 
 if __name__=="__main__":
     #this line becouse some terminal don't show color at first till we don't use os.system('cls)
-    print(colored('made by akki free to use :) ','yellow'));os.system('cls')
+    print(colored('made by akki free to use :) ','yellow'))
+    os.system('cls')
     main()
     #message for devs------->:)
     

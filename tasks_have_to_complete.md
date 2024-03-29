@@ -1,4 +1,4 @@
-# Tasks list 
+# Tasks list
 
 ## 17 march 2024
 <!--( checked ) for making it check true -->
@@ -14,7 +14,11 @@
 
 <input type="checkbox"> 1. **mutagen** This is a Python module used for reading and writing audio metadata, including ID3 tags. **use ffmpeg**\
 <input type="checkbox"> 2. **PIL (Python Imaging Library)** This is now known as Pillow, a Python Imaging Library fork. It's used for working with images in Python. **idk yet**\
-<input type="checkbox"> 3. **termcolor** This is a module used for producing colored terminal text. **make a function for that**\
-<input type="checkbox"> 4. **requests**  This is a module used for sending HTTP requests in Python. **use urllib**\
-<input type="checkbox"> 5. **subprocess** This module is used for spawning new processes, connecting to their input/output/error pipes, and obtaining their return codes. **use os module**
+<input type="checkbox" checked> 3. **termcolor** This is a module used for producing colored terminal text. **make a function for that**\
+<input type="checkbox"> 4. **subprocess** This module is used for spawning new processes, connecting to their input/output/error pipes, and obtaining their return codes. **use os module**
 *not sure about maybe will use request*
+
+## Future
+
+<input type="checkbox"> **write our own request library**
+<input type="checkbox"> 1. **requests**  This is a module used for sending HTTP requests in Python. **use urllib**\
