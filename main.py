@@ -68,16 +68,22 @@ def colored(string,color)->str:
 
 
 def custom_progress_bar(current, total, length=60)->str:
-    """
-    Prints a textual progress bar based on the current downloaded bytes, total downloadable bytes,
-    and the length of the progress bar.
+    '''
+    Generates a custom progress bar representation based on the current progress, total work, and specified length.
+    
+    PARAMETER:
+    - current: Current progress value.
+    - total: Total work value.
+    - length: Length of the progress bar (default is 60).
+    - *also it's requied colored library so from termcolor import colored.
 
-    Parameters:
-        current (int): The current downloaded bytes.
-        total (int): The total downloadable bytes.
-        length (int): The length of the progress bar.
-        colored (callable): A function for coloring text.
-    """
+    RETURN:
+    - str: A string representing the custom progress bar.
+      
+    EXAMPLE:
+    >>> custom_progress_bar(30, 50)  # Generates a progress bar representing 30% completion
+    [=====>                                 ] 30%
+    '''
     # The completed progress is represented by '=' characters * 'blocks_completed' times, followed by spaces for the remaining length.
     # The progress bar is updated in-place using '\r', and printed along with the formatted percentage and used colored to color text.
     progress = current / total
@@ -85,7 +91,6 @@ def custom_progress_bar(current, total, length=60)->str:
     bar = colored('[','yellow') + colored('=','blue') * blocks_compleated-1+colored('>','yellow') + ' ' * (length - blocks_compleated) + colored(']','yellow')
     percentage = colored('{:.0%}'.format(progress),'blue')
     print('\r' + bar + ' ' + percentage, end='', flush=True)
-
 
 
 def valid_name(name:str)->str:
@@ -219,20 +224,7 @@ def convert_audio(input_file, output_file, ffmpeg_path):
     command = [ffmpeg_path, '-i', input_file, '-codec:a', 'libmp3lame', output_file]
     subprocess.run(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-    #&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+    
 def add_cover_in_music(audio_file_path, title, artist, cover_photo_url,):
     '''this will add image in audio file and more meta info like title artist and album'''
     response = requests.get(cover_photo_url)
@@ -251,9 +243,9 @@ def add_cover_in_music(audio_file_path, title, artist, cover_photo_url,):
         os.unlink(temp_file.name)
     else:print(colored('failed to add cover art ','red'))
     
-def download_file_with_resume(url, filename, retry=1):
+
+def download_file_with_resume(url, filename, retry=1):#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     downloaded_bytes=0
-    while retry!=0:break
     headers = {'Range': f'bytes={downloaded_bytes}-'}
     response = requests.get(url, headers=headers, stream=True)
     total_size = int(response.headers.get('content-length', 0))
@@ -269,7 +261,8 @@ def download_file_with_resume(url, filename, retry=1):
         return True
     except Exception:return None
 
-def handeking_error_while_downloading_music(dict1,quality:str,mime_type,output_path,attempt_to_download=1):
+
+def handeking_error_while_downloading_music(dict1,quality:str,mime_type,output_path,attempt_to_download=1):#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     quality=quality if quality.isdigit() else '3'
     for _ in range(attempt_to_download):
         link_audio=get_audio_link_quality(dict1,quality,mime_type)[0]
@@ -281,7 +274,7 @@ def handeking_error_while_downloading_music(dict1,quality:str,mime_type,output_p
             with open(output_path,'wb')as f:f.write(b'')
     return False
 
-#youtube_functions_for_help_to_download :)
+
 def get_video_info(youtube_onj:YOUTUBE)->dict|None:
     '''gather the video info from YOUTUBE.youtube.streaming_data() and store them in 
     a dict and return the dict takes youtube_obj as an arguemnt
@@ -306,12 +299,16 @@ def get_video_info(youtube_onj:YOUTUBE)->dict|None:
     # link came encoded with there token so we can't gather 'url' will return none
     if streaming_data['formats'][0].get('url',None) is None:return None
     
+    # Initialize the dictionary to store video info
     dict1={'video':{'audio_aviable':{},'mp4':{},'webm':{}},'music':{'mp3':{},'opus':{}}}
+    
+    #tring to gather content lenth by differnt aproach 
     for data in streaming_data['formats']:
         try:size=data['contentLength']
         except Exception:size=data['bitrate']*(int(data['approxDurationMs'])/10000)
         dict1['video']['audio_aviable'].update({data['qualityLabel']:(data['url'],size)})
-        
+    
+    # Iterate through each format in streaming data to gather video and audio info
     for data in streaming_data['adaptiveFormats']:
         mimetype=data['mimeType']
         if 'video/mp4' in mimetype:
@@ -403,11 +400,9 @@ def get_audio_link_quality(dict1,quality:str,mime_type)->tuple|None:
     >>> request.get(link[0])
     '''
     quality_list=('1','2','3')
-    # Set default value in valriables if not in the valid options
     quality='3' if quality not in quality_list else quality
     mime_type='mp3' if mime_type not in ('mp3','opus') else mime_type
-    
-    # Ensure MIME type is available in the data
+   
     mime_type = 'opus' if mime_type == 'mp3' and mime_type not in dict1['music'] else 'mp3'
     
     # Retrieve the available quality levels and select the appropriate audio quality

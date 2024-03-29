@@ -1,15 +1,6 @@
 import requests
 import re
 import json
-import os 
-import subprocess
-from termcolor import colored
-from clint.textui import progress
-from tempfile import NamedTemporaryFile
-from io import BytesIO
-from typing import IO
-from PIL import Image
-from mutagen.id3 import ID3,APIC,TIT2,TPE1,TALB
 
 class YouTubeLinkError(Exception):
     """Error raised for invalid YouTube links."""
