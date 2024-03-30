@@ -13,14 +13,20 @@
 
 <input type="checkbox"  checked> **publish it on git hub**
 
-<input type="checkbox"> **write code again but in strctured way and redaable with proper doctype**
+## 29 march 2024 - ?
+
+<input type="checkbox" checked> **write code again but in strctured way and redaable with proper doctype**
 
 <input type="checkbox" checked> **make fine readme file for it**
 
+<input type="checkbox"> **make all 4 func of youtube_downloader libray better and short**
+
+<input type="checkbox"> **make youtube libray more better fix __init__ func in main YOUTUBE module also add proper docstring for all :)** 
+
 <input type="checkbox"> **need not to use these library**
 
- 1. **mutagen** This is a Python module used for reading and writing audio metadata, including ID3 tags. **use ffmpeg**
- 2. **PIL (Python Imaging Library)** This is now known as Pillow, a Python Imaging Library fork. It's used for working with images in Python. **idk yet**
+ 1. **mutagen** This is a Python module used for reading and writing audio metadata, including ID3 tags. **use ffmpeg**`done`
+ 2. **PIL (Python Imaging Library)** This is now known as Pillow, a Python Imaging Library fork. It's used for working with images in Python. **idk yet** **can do it with ffmpeg**
  3. **termcolor** This is a module used for producing colored terminal text. **make a function for that** `done`\
  ~~4. **subprocess** This module is used for spawning new processes, connecting to their input/output/error pipes, and obtaining their return codes. **use os module**~~
 
