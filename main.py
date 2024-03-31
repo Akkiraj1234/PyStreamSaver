@@ -1,12 +1,12 @@
-from mutagen.id3 import ID3,APIC,TIT2,TPE1,TALB
-from PIL import Image
 from tempfile import NamedTemporaryFile
 from io import BytesIO
 import subprocess
-import requests
 import os
-from youtube import YOUTUBE
 
+import requests#need to remove request :) and make own function
+from PIL import Image # need to remove pil library and it's onlly use to crop can done by ffmpeg :)
+
+from youtube import YOUTUBE
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!important_variables!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 default_path='C:\\Users\\DELL\\Desktop\\side project'
 ffmpeg_path='C:\\ffmpeg\\ffmpeg-2024-03-11-git-3d1860ec8d-full_build\\bin\\ffmpeg.exe'
@@ -67,6 +67,12 @@ def colored(string,color)->str:
     return f"{color_code}{string}\x1b[0m"
 
 
+# def print_decorator(*funcs, **kwargs):
+#     print(colored("=" * 80,"yellow"))
+#     for func in funcs:
+#         func(**kwargs) if kwargs else func()
+#     print(colored("=" * 80,"yellow"))
+
 def custom_progress_bar(current, total, length=60)->str:
     '''
     Generates a custom progress bar representation based on the current progress, total work, and specified length.
@@ -88,21 +94,48 @@ def custom_progress_bar(current, total, length=60)->str:
     # The progress bar is updated in-place using '\r', and printed along with the formatted percentage and used colored to color text.
     progress = current / total
     blocks_compleated = int(progress * length)
-    bar = colored('[','yellow') + colored('=','blue') * blocks_compleated-1+colored('>','yellow') + ' ' * (length - blocks_compleated) + colored(']','yellow')
+    bar = colored('[','yellow') + colored('=','blue') * blocks_compleated+colored('>','yellow') + ' ' * (length - blocks_compleated) + colored(']','yellow')
     percentage = colored('{:.0%}'.format(progress),'blue')
     print('\r' + bar + ' ' + percentage, end='', flush=True)
 
 
-def valid_name(name:str)->str:
-    '''this function takes string as an argument and return string that is valid for making file and dir in the window'''
+def _valid_name(name:str)->str:
+    """
+    Return a valid name for creating files and directories in Windows.
+
+    Args:
+        name (str): The input name to be validated.
+
+    Returns:
+        str: A valid name with illegal characters replaced by underscores.
+
+    Example:
+        >>> invalid_name = 'file<>.txt'
+        >>> valid_name = _valid_name(invalid_name)
+        >>> print(valid_name)
+        file____.txt
+    """
     return ''.join(a if not a in '<>:"/\\|?*' else '_' for a in name)
 
-
-
 def valid_path_name(dir_path,name:str)->str:
-    '''This func return valid name for maiking file in window if name already exists modify the name and return it\n
-    takes dir path and name of file +.extention of file as argument'''
-    name,extention=valid_name(name).rsplit('.', 1)
+    """
+    Return a valid filename by modifying it if it already exists in the specified directory path.
+    
+    Args:
+        dir_path (str): The directory path where the file will be saved.
+        name (str): The name of the file including its extension.
+        
+    Returns:
+        str: A valid filename with a modified name if the original name already exists in the directory.
+        
+    Example:
+        >>> dir_path = "C:\\Users\\User\\Desktop\\"
+        >>> existing_name = "file.txt"
+        >>> valid_name = valid_path_name(dir_path, existing_name)
+        >>> print(valid_name)
+        "C:\\Users\\User\\Desktop\\file(1).txt"
+    """
+    name,extention=_valid_name(name).rsplit('.', 1)
     number=1
     extra=''
     while os.path.exists(dir_path+'\\'+name+extra+'.'+extention):
@@ -110,10 +143,26 @@ def valid_path_name(dir_path,name:str)->str:
         number+=1
     return dir_path+'\\'+name+extra+'.'+extention
 
+
 def valid_dir_name(dir_path:str,name:str)->str:
-    '''this function return valid name for making dir in window if name already exists modify the name and returun it\n
-    takes dir_path and name of dir u wanna make as an argumnet'''
-    name=valid_name(name)
+    """
+    Return a valid directory name by modifying it if it already exists in the specified directory path.
+    
+    Args:
+        dir_path (str): The directory path where the directory will be created.
+        name (str): The name of the directory.
+        
+    Returns:
+        str: A valid directory name with a modified name if the original name already exists in the directory.
+        
+    Example:
+        >>> dir_path = "C:\\Users\\User\\Desktop\\"
+        >>> existing_name = "directory"
+        >>> valid_name = valid_dir_name(dir_path, existing_name)
+        >>> print(valid_name)
+        C:\\Users\\User\\Desktop\\directory(1)
+    """
+    name=_valid_name(name)
     extra=''
     number=1
     while os.path.exists(dir_path+'\\'+name+extra):
@@ -121,7 +170,7 @@ def valid_dir_name(dir_path:str,name:str)->str:
         number+=1
     return dir_path+'\\'+name+extra
 
-def crop_center_square(image_path)->bytes:
+def crop_center_square(image_path)->None:#need to change it can done by ffmpeg
     """
     Crop the image to center it on a 1:1 aspect ratio.
 
@@ -129,33 +178,29 @@ def crop_center_square(image_path)->bytes:
     - image_path (str): The path to the image file.
 
     Returns:
-    - bytes: The cropped image data in bytes format.
+    None. The function directly saves the cropped image back to the original file.
 
     Example:
-    >>> cropped_image_bytes = crop_center_square("image.jpg")
+    >>> crop_center_square("image.jpg")
 
-    Note:
+    Notes:
     - This function crops the image to make it a square by taking the larger dimension (width or height) and
       cropping from the center to achieve a 1:1 aspect ratio.
     - The input image should be in JPEG format.
-    
-    -writen by chat gpt 3.5 
+    - The function directly modifies the original image file by overwriting it with the cropped version.
+    writen by chat-gpt :) just want to let u guys know
     """
-    with open(image_path,'rb')as f:
-        image_data=f.read()
+    with open(image_path, 'rb') as f:
+        image_data = f.read()
     img = Image.open(BytesIO(image_data))
     width, height = img.size
-    output_buffer = BytesIO()
     size = min(width, height)
     left = (width - size) // 2
     top = (height - size) // 2
     right = left + size
     bottom = top + size
     img = img.crop((left, top, right, bottom))
-    img.save(output_buffer, format='JPEG')
-    image_bytes = output_buffer.getvalue()
-    return image_bytes
-    
+    img.save(image_path)
     
 def get_size(content_length)->str:
     """
@@ -223,34 +268,67 @@ def convert_audio(input_file, output_file, ffmpeg_path):
     """
     command = [ffmpeg_path, '-i', input_file, '-codec:a', 'libmp3lame', output_file]
     subprocess.run(command,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+def add_cover_in_music(audio_file_path:str, title:str, artist:str, cover_photo_url:str,output_path:str,ffmpeg_path:str):
+    '''
+    Add cover art and metadata to an audio file.
+
+    Parameters:
+    - audio_file_path (str): The path to the input audio file.
+    - title (str): The title metadata for the audio file.
+    - artist (str): The artist metadata for the audio file.
+    - cover_photo_url (str): The URL of the cover photo.
+    - output_path (str): The path to save the modified audio file.
+    - ffmpeg_path (str): The path to the FFmpeg executable.
+
+    This function downloads a cover photo from the provided URL, adds it to the input audio file,
+    and sets the specified metadata such as title and artist. The modified audio file is saved
+    at the specified output path.
+
+    Example:
+    >>> add_cover_in_music("input_audio.mp3", "Song Title", "Artist Name", "cover.jpg", "output_audio.mp3", "/path/to/ffmpeg")
+    '''
+    temp_file=NamedTemporaryFile(delete=False,suffix='.jpeg')
+    download_file_with_resume(cover_photo_url,temp_file.name)
+    crop_center_square(temp_file.name)
+    comand=[ffmpeg_path, '-i', audio_file_path, '-i', temp_file.name,'-c','copy', '-map', '0', '-map', '1', '-metadata', f'title={title}', '-metadata', f'artist={artist}', output_path]
+    subprocess.call(comand,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    temp_file.close()
+    os.unlink(temp_file.name)
     
     
-def add_cover_in_music(audio_file_path, title, artist, cover_photo_url,):
-    '''this will add image in audio file and more meta info like title artist and album'''
-    response = requests.get(cover_photo_url)
-    if response.status_code==200:
-        audio_tags = ID3()
-        audio_tags.add(TIT2(encoding=3, text=title))
-        audio_tags.add(TPE1(encoding=3, text=artist))
-        audio_tags.add(TALB(encoding=3, text=artist))
-        with NamedTemporaryFile(delete=False) as temp_file:temp_file.write(response.content)
-        cropped_img = crop_center_square(temp_file.name)
-        if cropped_img.startswith(b'\xff\xd8\xff'):cover_mime='image/jpeg'
-        elif cropped_img.startswith(b'\x89PNG\r\n\x1a\n'):cover_mime='image/png'
-        apic = APIC(encoding=3, mime=cover_mime, type=3, desc=u'Cover', data=cropped_img)
-        audio_tags.add(apic)
-        audio_tags.save(audio_file_path)
-        os.unlink(temp_file.name)
-    else:print(colored('failed to add cover art ','red'))
+def _add_cover_and_meta_data(input_data,output_path,ffmpeg_path,title, artist, cover_photo_url):
+    '''
+    Convert input audio data to MP3 format, add cover art and metadata, and save the modified audio file.
+
+    Parameters:
+    - input_data (str or bytes): The input audio data path or bytes.
+    - output_path (str): The path to save the modified audio file.
+    - ffmpeg_path (str): The path to the FFmpeg executable.
+    - title (str): The title metadata for the audio file.
+    - artist (str): The artist metadata for the audio file.
+    - cover_photo_url (str): The URL of the cover photo.
+
+    This function converts the input audio data to MP3 format using FFmpeg, downloads the cover photo from the provided URL,
+    adds it along with the specified metadata (title and artist) to the audio file, and saves the modified audio file
+    at the specified output path. The temporary files created during the process are automatically deleted.
+
+    Example:
+    >>> _add_cover_and_meta_data("input_audio.wav", "output_audio.mp3", "/path/to/ffmpeg", "My Title", "My Artist", "cover_photo_url.jpg")
+    '''
+    temp_file='output.mp3'
+    convert_audio(input_data,temp_file,ffmpeg_path)
+    add_cover_in_music(temp_file,title,artist,cover_photo_url,output_path,ffmpeg_path)
+    os.unlink(temp_file)
     
 
-def download_file_with_resume(url, filename, retry=1):#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    downloaded_bytes=0
-    headers = {'Range': f'bytes={downloaded_bytes}-'}
-    response = requests.get(url, headers=headers, stream=True)
-    total_size = int(response.headers.get('content-length', 0))
-    custom_progress_bar(downloaded_bytes, total_size)
+def download_file_with_resume(url, filename, retry=1,downloaded_bytes=0):#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  fix it when i will make my own request library 
     try:
+        headers = {'Range': f'bytes={downloaded_bytes}-'}
+        response = requests.get(url, headers=headers, stream=True)
+        total_size = int(response.headers.get('content-length', 0))
+        custom_progress_bar(downloaded_bytes, total_size)
         with open(filename, 'ab') as f:
             for chunk in response.iter_content(chunk_size=4096):
                 if not chunk: continue
@@ -262,7 +340,7 @@ def download_file_with_resume(url, filename, retry=1):#!!!!!!!!!!!!!!!!!!!!!!!!!
     except Exception:return None
 
 
-def handeking_error_while_downloading_music(dict1,quality:str,mime_type,output_path,attempt_to_download=1):#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+def handeking_error_while_downloading_music(dict1,quality:str,mime_type,output_path,attempt_to_download=1):#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! same fix when i will make my own request library
     quality=quality if quality.isdigit() else '3'
     for _ in range(attempt_to_download):
         link_audio=get_audio_link_quality(dict1,quality,mime_type)[0]
@@ -409,6 +487,7 @@ def get_audio_link_quality(dict1,quality:str,mime_type)->tuple|None:
     audio_data = dict1['music'].get(mime_type)
     if audio_data:
         quality_levels = sorted(map(int, audio_data.keys()))
+        
         if quality == '1':
             return audio_data[str(quality_levels[0])]
         if quality == '2':
@@ -418,37 +497,126 @@ def get_audio_link_quality(dict1,quality:str,mime_type)->tuple|None:
     return None
 
 
-def youtube_dowloader():
-    def audio_downloader():
-        logo(stop=False,clear=True)
-        link=input(colored("enter the downlaod link(^-^) ","yellow"))
-        youtube_object=YOUTUBE(link)
-        
-        #getting _info_by_sourse
+def getting_video_info_youtube(video:bool)->tuple[dict,str,str,str]|tuple[list,str]|None:
+    """
+    Fetches information about a video or playlist from YouTube.
+
+    Args:
+        - video (bool): If True, fetches information about a single video. If False, fetches information about a playlist.
+
+    Returns:
+        - FOR VIDEOS: --->  tuple[dict, str, str, str] or None: \n
+            1. dict , video title, artist name, and thumbnail link if fetched successfully.\n
+            2. Returns None if there's an error in collecting data.\n
+        - FOR PLAYLIST: --->  tuple[list[str], str] or None:\n
+            1. A tuple containing a list of video IDs in the playlist and the playlist title.\n
+            2. Returns None if there's an error in collecting data.\n
+    """
+    logo(stop=False,clear=True)
+    link=input(colored("enter the link to download (^-^)* ","yellow"))
+    youtube_object=YOUTUBE(link)
+    
+    if video:
         dict1=get_video_info(youtube_onj=youtube_object)
-        if dict1 is None:_=input(colored("there is some error in collecting data may solve in futube update click enter to continue",'red'));return None
-        print(colored('='*60,'cyan')+colored('\nvideo found name:- ','blue')+(title_video:=youtube_object.YouTube.title())+colored('   lenth:- :','blue')+sec_to_min_to_hours(youtube_object.YouTube.lenth_sec())+colored('\n'+'='*60,'cyan'))
-        useful_data=[]
         
+        if dict1 is None:
+            _=input(colored("there is some error in collecting data may solve in futube update click enter to continue",'red'))
+            return None
+        
+        #print(prininging info regrading video in formated way)
+        print(colored('=' * 60, 'cyan') +
+              colored('\nVideo found: ', 'blue') +
+              youtube_object.YouTube.title() +
+              colored('   Length: ', 'blue') +
+              sec_to_min_to_hours(youtube_object.YouTube.lenth_sec()) +
+              colored('\n' + '=' * 60, 'cyan'))
+        
+        # Return video information
+        return (dict1,
+                youtube_object.YouTube.title(),
+                youtube_object.YouTube.artist_name(),
+                youtube_object.YouTube.thumbnail(5))
+    else:
+        get_all_video_id=youtube_object.playlist.extract_video_id()
+        
+        if get_all_video_id is None:
+            _=input(colored("there is some error while facturing data try after sometime:)",'red'))
+            return None
+        
+        print(colored('='*60,'cyan')+
+              colored('\nplaylist name:- ','blue')+
+              (youtube_object.playlist.get_title_of_playlist())+
+              colored('   total_videos  ','blue')+
+              youtube_object.playlist.get_size_of_playlist()+
+              colored('\n'+'='*60,'cyan'))
+        print(colored('selecting lower resualtion may couse error :)','red'))
+        
+        return (
+            get_all_video_id,
+            youtube_object.playlist.get_title_of_playlist())
+
+
+def audio_downloader_youtube(link_of_music:str, path_to_save:str, ffmpeg_path:str, title_video:str , artist_name:str , thumbnail_link:str)->None:
+    """
+    Downloads audio from a YouTube link and saves it to the specified path.
+    
+    Args:
+        link_of_music (str): The YouTube link of the music video.
+        path_to_save (str): The path where the audio file will be saved.
+        ffmpeg_path (str): The path to the FFmpeg executable.
+        title_video (str): The title of the video.
+        artist_name (str): The name of the artist.
+        thumbnail_link (str): The link to the thumbnail image.
+        
+    Returns:
+        None
+    """
+    # Download audio file to a temporary location
+    with NamedTemporaryFile(delete=False , dir=default_path) as temp_audi_path:
+        response=download_file_with_resume(link_of_music,temp_audi_path.name)
+    
+    # Check if the download was successful
+    if response:
+        # Add cover art and metadata to the audio file
+        print(colored('finishing up....wait a...bit adding cover_image...','blue'))
+        _add_cover_and_meta_data(temp_audi_path.name,path_to_save,ffmpeg_path,_valid_name(title_video),artist_name,thumbnail_link)
+        print(colored('file saved in path :- '+str(path_to_save),'yellow'))
+    else:
+        # Print error message if download failed
+        print(colored('there is some error while dwonloading the file try diffrent resulation :)','red'))
+        
+    #at last unlink the tenmpfile
+    os.unlink(temp_audi_path.name)
+
+
+def youtube_dowloader():
+    def youtube_audio_downloader():
+        """
+        Downloads audio from a video, providing options for different resolutions.
+        
+        Retrieves video information, including available audio formats, from a source.
+        Presents the user with options for downloading different resolutions of the audio.
+        
+        Returns:
+            None
+        """
+        #collecting video_info_by the function getting_video_info_youtube
+        dict1,title_video,artist_name,thumbnail_link=getting_video_info_youtube(video=True)
+        
+        useful_data=[]
         for num,data in enumerate(dict1['music']['mp3'].items(),start=1):
             print(colored('{:<{}}{:<{}}{}'.format(f'[ {str(num)} ]',7,data[1][1],24,get_size(data[0])),'blue'));useful_data.append(data[1][0])
         for num,data in enumerate(dict1['music']['opus'].items(),start=num+1):
             print(colored('{:<{}}{:<{}}{}'.format(f'[ {str(num)} ]',7,data[1][1],24,get_size(data[0])),'blue'));useful_data.append(data[1][0])
+        
         path=valid_path_name(default_path,title_video+'.mp3')
-        while not (resulation:=input(colored('enter which resulation video you wanna download?','yellow'))).isdigit() or not 1<=int(resulation)<=num:print(colored('please type within in givin option :)','red'))
-
-        with NamedTemporaryFile(delete=False,dir=default_path)as temp_audi_path:
-            response=download_file_with_resume(useful_data[int(resulation)-1],temp_audi_path.name)
-        if response:
-            print(colored('finishing up....wait a...bit adding cover_image...','blue'))
-            convert_audio(temp_audi_path.name,path,ffmpeg_path)
-            add_cover_in_music(path,valid_name(title_video),youtube_object.YouTube.artist_name(),youtube_object.YouTube.thumbnail(5))
-            os.unlink(temp_audi_path.name)
-            print(colored('file saved in path :- '+str(path),'yellow'))
-        else:
-            os.unlink(temp_audi_path.name)
-            print(colored('there is some error while dwonloading the file try diffrent resulation :)','red'))
-
+        # checking if resulation entered is valid or in range or not if in range or valid pass
+        # else print the error message and takes input again till not get valid input
+        while not (resulation:=input(colored('enter which resulation video you wanna download?','yellow'))).isdigit() or not 1<=int(resulation)<=num:
+            print(colored('please type within in givin option :)','red'))
+        
+        # downloading audio
+        audio_downloader_youtube(useful_data[int(resulation)-1],path,ffmpeg_path,title_video,artist_name,thumbnail_link) 
     def video_downloadedr():
         logo(stop=False,clear=True)
         link=input(colored("enter the downlaod link(^-^) ","yellow"))
@@ -498,7 +666,6 @@ def youtube_dowloader():
                 print(colored("there is some error - try dwonloading with differnt resulation :("))
             else:
                 print(colored("downloading_commpleted file saved in path:0 "+str(path),'yellow'))
-
     def playlist_video_downloader():
         logo(stop=False,clear=True)
         link=input(colored("enter the playlist link(^-^) ","yellow"))
@@ -554,45 +721,45 @@ def youtube_dowloader():
                 else:
                     print(colored("downloading_commpleted file saved in path:0 "+str(output_path),'yellow'))
             print(colored("="*80,"yellow"))
-            
-
     def playlist_audio_downloaderr():
-        logo(stop=False,clear=True)
-        link=input(colored("enter the playlist link(^-^) ","yellow"))
-        playlist=YOUTUBE(link)
+        """
+        Downloads audio files from YouTube playlist.
+
+        Fetches information about videos in a YouTube playlist and downloads their audio.
+        The user is prompted to select the quality of the audio to download.
+
+        Returns:
+            None
+        """
+        # Get playlist information
+        get_all_video_id,title_playlist=getting_video_info_youtube(video=False)
         
-        get_all_video_id=playlist.playlist.extract_video_id()
-        if get_all_video_id is None:_=input(colored("there is some error while facturing data try after sometime:)",'red'));return None
-        print(colored('='*60,'cyan')+colored('\nplaylist name:- ','blue')+(title_playlist:=playlist.playlist.get_title_of_playlist())+colored('   total_videos  ','blue')+playlist.playlist.get_size_of_playlist()+colored('\n'+'='*60,'cyan'))
-        print(colored('selecting lower resualtion may couse error :)','red'))
-        while not (quality:=input(colored('enter quality (lower[1] medium[2] higher[3] ) for downlaoding -> [1/2/3]','blue'))) in ('1','2','3'):print(colored('wrong input plese select resulation in the given list','red'))
-        
+        # Prompt user to select audio quality
+        while not (quality:=input(colored('enter quality (lower[1] medium[2] higher[3] ) for downlaoding -> [1/2/3]','blue'))) in ('1','2','3'):
+            print(colored('wrong input plese select resulation in the given list','red'))
+            
+        # Create directory to save playlist audio files
         playlist_saving_dir=valid_dir_name(default_path,title_playlist)
         os.mkdir(playlist_saving_dir)
         
+        # Download audio for each video in the playlist
         for num,id in enumerate(get_all_video_id,start=1):
             link=f'https://www.youtube.com/watch?v={id}'
+            
             new_youtube_obj=YOUTUBE(link)
             dict1=get_video_info(new_youtube_obj)
-            if dict1 is None:
-                print(colored("="*80,"yellow")+'\n'+colored(f'[ {num} ] there is some error while dwonloading the file try diffrent resulation :(','red'))
-                print(colored(f"title: {new_youtube_obj.YouTube.title()}\nlink: {link}",'blue')+'\n'+colored("="*80,"yellow"))
+            print(colored("="*80,"yellow"))
+            
+            if dict1 is None:# if dict1 is None then go directally for next audio to download
+                print(colored(f'[ {num} ] there is some error while dwonloading the file try diffrent resulation :(','red')),
+                print(colored(f"title: {new_youtube_obj.YouTube.title()}\nlink: {link}",'blue'))
                 continue
+            
             output_path=valid_path_name(playlist_saving_dir,new_youtube_obj.YouTube.title()+'.mp3')
             link=get_audio_link_quality(dict1,quality,'mp3')[0]
             
-            print(colored("="*80,"yellow")+'\n'+colored(f"[ {num} ] downloadiing:- {new_youtube_obj.YouTube.title()}","blue"))
-            with NamedTemporaryFile(delete=False,dir=default_path)as temp_audi_path:
-                response=download_file_with_resume(link,temp_audi_path.name)
-            if response:
-                print(colored('finishing up....wait a...bit adding cover_image...','blue'))
-                convert_audio(temp_audi_path.name,output_path,ffmpeg_path)
-                add_cover_in_music(output_path,valid_name(new_youtube_obj.YouTube.title()),new_youtube_obj.YouTube.artist_name(),new_youtube_obj.YouTube.thumbnail(5))
-                os.unlink(temp_audi_path.name)
-                print(colored('file saved in path :- '+str(output_path),'yellow')+'\n'+colored("="*80,"yellow"))
-            else:
-                os.unlink(temp_audi_path.name)
-                print(colored("="*80,"yellow")+'\n'+colored(f'[ {num} ] there is some error while dwonloading the file try diffrent resulation :)','red')+'\n'+colored("="*80,"yellow"))
+            print(colored(f"[ {num} ] downloadiing:- {new_youtube_obj.YouTube.title()}","blue")),
+            audio_downloader_youtube(link,output_path,ffmpeg_path,new_youtube_obj.YouTube.title(),new_youtube_obj.YouTube.artist_name(),new_youtube_obj.YouTube.thumbnail(5))
 
     while True:
         logo(stop=False,clear=True)
@@ -605,7 +772,7 @@ def youtube_dowloader():
         response=input(colored("tour response here:) ",'red'))
         match response:
             case '1':video_downloadedr()
-            case '2':audio_downloader()
+            case '2':youtube_audio_downloader()
             case '3':playlist_video_downloader()
             case '4':playlist_audio_downloaderr()
             case '5':break

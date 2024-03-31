@@ -34,7 +34,7 @@ PyStreamProject is a Python-based project designed to download multimedia conten
 - Support for downloading from Spotify
 - Custom downloader for websites not listed
 - Improved error handling
-- Enhanced user int
+- Enhanced user interface
 - Support Gui interface
 
 ## Contribution
