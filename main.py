@@ -509,7 +509,8 @@ def getting_video_info_youtube(video:bool)->tuple[dict,str,str,str]|tuple[list,s
             2. Returns None if there's an error in collecting data.\n
     """
     logo(stop=False,clear=True)
-    link=input(colored("enter the link to download (^-^)* ","yellow"))
+    link=input(colored("('n' for exit )enter the link to download (^-^)* ","yellow"))
+    if link =='n':return 'going back'
     youtube_object=YOUTUBE(link)
     
     if video:
@@ -524,7 +525,7 @@ def getting_video_info_youtube(video:bool)->tuple[dict,str,str,str]|tuple[list,s
               colored('\nVideo found: ', 'blue') +
               youtube_object.YouTube.title() +
               colored('   Length: ', 'blue') +
-              sec_to_min_to_hours(youtube_object.YouTube.lenth_sec()) +
+              sec_to_min_to_hours(youtube_object.YouTube.length_sec()) +
               colored('\n' + '=' * 60, 'cyan'))
         
         # Return video information
@@ -641,10 +642,12 @@ def youtube_dowloader():
         Presents the user with options for downloading different resolutions of the audio.
         
         Returns:
-            None
+            None 'going back'
         """
         #collecting video_info_by the function getting_video_info_youtube
-        dict1,title_video,artist_name,thumbnail_link=getting_video_info_youtube(video=True)
+        data=getting_video_info_youtube(video=True)
+        if data=='going back':return None
+        dict1,title_video,artist_name,thumbnail_link=data
         
         useful_data=[]
         for num,data in enumerate(dict1['music']['mp3'].items(),start=1):
@@ -674,7 +677,9 @@ def youtube_dowloader():
         Returns:
             None
         '''
-        dict1, video_title, artist,thumbnail_link=getting_video_info_youtube(video=True)
+        data=getting_video_info_youtube(video=True)
+        if data=='going back':return None
+        dict1, video_title, artist,thumbnail_link=data
         useful_data=[]
         
         print(colored('best link to download(mp4) - audio avialabe'+'='*30,'yellow'))
@@ -709,7 +714,9 @@ def youtube_dowloader():
         Returns:
             None
         '''
-        get_all_video_id,title_playlist=getting_video_info_youtube(video=False)
+        data=getting_video_info_youtube(video=False)
+        if data=='going back':return None
+        get_all_video_id,title_playlist=data
         
         while not (resulation:=input(colored('enter resulation [144p,240p,*360p*,480p,*720p*,1080p,1440p,2160p] for downlaoding -> ','blue'))) in ('144p','240p','360p','480p','720p','1080p','1440p','2160p'):
             print(colored('wrong input plese select resulation in the given list','red'))
@@ -751,7 +758,9 @@ def youtube_dowloader():
             None
         """
         # Get playlist information
-        get_all_video_id,title_playlist=getting_video_info_youtube(video=False)
+        data=getting_video_info_youtube(video=False)
+        if data=='going back':return None
+        get_all_video_id,title_playlist=data
         
         # Prompt user to select audio quality
         while not (quality:=input(colored('enter quality (lower[1] medium[2] higher[3] ) for downlaoding -> [1/2/3]','blue'))) in ('1','2','3'):

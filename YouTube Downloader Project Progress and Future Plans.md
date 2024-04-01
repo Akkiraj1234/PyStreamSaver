@@ -27,7 +27,7 @@ for making it check true
 
 **[ ✓ ]** improve all 4 functions in the YouTube downloader library
 
-**[ → ]** further improve the YouTube library, fix init function in main YOUTUBE module, and add proper docstrings to all functions
+**[ ✓ ]** further improve the YouTube library, fix init function in main YOUTUBE module, and add proper docstrings to all functions
 
 **[ ✓ ]** avoid using the following libraries:
 
@@ -41,6 +41,8 @@ for making it check true
 **[ ... ]** PIL (Python Imaging Library): *This is now known as Pillow, a Python Imaging Library fork, used for working with images in Python. We will explore alternatives, possibly leveraging ffmpeg.*
 
 **[ ... ]** start working on the Pinterest download section
+
+**[ ... ]** Write exception handeling for main.py function
 
 ## Future
 
