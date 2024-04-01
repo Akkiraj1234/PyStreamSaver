@@ -37,13 +37,13 @@ def logo(clear:bool=True,stop:bool=False)->str:
     _=input(colored('enter to continue ','blue')) if stop else None
     
     
-def colored(string,color)->str:
+def colored(string, color):
     """
     Return the input string with specified color in ANSI escape sequence.
 
     Parameters:
     - string (str): The input string to be colored.
-    - color (str): The color name. Supported color names are 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white', and 'reset'.
+    - color (str): The color name. Supported color names are 'red', 'green', 'yellow', 'blue', 'purple', 'cyan', 'white', 'black', 'gray', and 'reset'.
 
     Returns:
     - str: The input string wrapped in ANSI escape sequence for the specified color.
@@ -60,18 +60,14 @@ def colored(string,color)->str:
         'purple': '\x1b[35m',
         'cyan': '\x1b[36m',
         'white': '\x1b[37m',
+        'black': '\x1b[30m',
+        'gray': '\x1b[90m',
         'reset': '\x1b[0m'
     }
     # Color escape sequences are added before the string and default to white color at the end (\x1b[0m).
-    color_code=colors.get(color.lower(),'\x1b[0m')
+    color_code = colors.get(color.lower(), '\x1b[0m')
     return f"{color_code}{string}\x1b[0m"
 
-
-# def print_decorator(*funcs, **kwargs):
-#     print(colored("=" * 80,"yellow"))
-#     for func in funcs:
-#         func(**kwargs) if kwargs else func()
-#     print(colored("=" * 80,"yellow"))
 
 def custom_progress_bar(current, total, length=60)->str:
     '''
@@ -587,6 +583,53 @@ def audio_downloader_youtube(link_of_music:str, path_to_save:str, ffmpeg_path:st
         
     #at last unlink the tenmpfile
     os.unlink(temp_audi_path.name)
+    
+def video_downloader_youtube(video_staus_if_audio:bool,link_video:str,dict1:dict,attempt_to_download:int,output_path:str,ffmpeg_path:str)->bool:
+    '''
+    Downloads video from a YouTube link.
+
+    Args:
+        video_status_if_audio (bool): Indicates whether the video has audio available.
+        link_video (str): The URL of the video to download.
+        dict1 (dict): A dictionary containing video information.
+        attempt_to_download (int): Number of attempts to download the video.
+        output_path (str): The path where the downloaded video will be saved.
+        ffmpeg_path (str): The path to the ffmpeg executable.
+
+    Returns:
+        bool: True if download is successful, False otherwise.
+    '''
+
+    print(colored('video downloading started :)..','blue'))
+    # If video has no audio
+    if not video_staus_if_audio:
+        # Download video
+        with NamedTemporaryFile(delete=False,dir=default_path) as video_file:
+            response=download_file_with_resume(link_video,video_file.name)
+        if not response:return False # if donloading failed then return False
+        
+        # Start downloading audio
+        print(colored('music downloading started :)..','blue'))
+        with NamedTemporaryFile(delete=False,dir=default_path) as audio_file:
+            music=handeking_error_while_downloading_music(dict1,'3','mp3',audio_file.name,attempt_to_download)
+        
+        # Add audio to the video if music True then print(error message)
+        if music:
+            add_audio_to_video(video_file.name,audio_file.name,ffmpeg_path,output_path)
+        else:
+            print(colored("Failed to add audio in the video :( ","red"))
+        #unlinking temp files
+        os.unlink(audio_file.name)
+        os.unlink(video_file.name)
+     # If video has audio
+    else:
+        # Download the video
+        response=download_file_with_resume(link_video,output_path)
+        if not response:# Handle download failure
+            os.unlink(output_path)
+            return False
+    return True #returning true becouse every step was sucsessfull
+
 
 
 def youtube_dowloader():
@@ -617,14 +660,21 @@ def youtube_dowloader():
         
         # downloading audio
         audio_downloader_youtube(useful_data[int(resulation)-1],path,ffmpeg_path,title_video,artist_name,thumbnail_link) 
+        
     def video_downloadedr():
-        logo(stop=False,clear=True)
-        link=input(colored("enter the downlaod link(^-^) ","yellow"))
-        youtube_object=YOUTUBE(link)
-        dict1=get_video_info(youtube_object)
-        if dict1 is None:_=input(colored("there is some error in collecting data may solve in futube update click enter to continue",'red'));return None
-        print(colored('='*60,'cyan')+colored('\nvideo found name:- ','blue')+(title_video:=youtube_object.YouTube.title())+colored('   lenth:- :','blue')+sec_to_min_to_hours(youtube_object.YouTube.lenth_sec())+colored('\n'+'='*60,'cyan'))
-        if dict1 is None:_=input(colored("there is some error in collecting data may solve in futube update click enter to continue",'red'));return None
+        '''
+        This function facilitates downloading videos from YouTube.
+
+        It retrieves video information from YouTube and provides options to download the video 
+        in different resolutions. If available, it also provides options with and without audio.
+
+        Args:
+            None
+
+        Returns:
+            None
+        '''
+        dict1, video_title, artist,thumbnail_link=getting_video_info_youtube(video=True)
         useful_data=[]
         
         print(colored('best link to download(mp4) - audio avialabe'+'='*30,'yellow'))
@@ -635,92 +685,61 @@ def youtube_dowloader():
         for num,items in enumerate(dict1['video']['webm'].items(),start=num+1):print(colored('{:<{}}{:<{}}{}'.format(f'[ {num} ]',7,items[0],13,get_size(items[1][1])),'blue'));useful_data.append([items[1][0],'.webm',False])
         print(colored('video does not have audio don\'t worry we try to add audio :)','yellow'))
         
-        while not (resulation:=input(colored('enter which resulation video you wanna download?','yellow'))).isdigit() or not 1<=int(resulation)<=num:print(colored('please type within in givin option :)','red'))
-        path=valid_path_name(default_path,title_video+useful_data[int(resulation)-1][1])
+        while not (resulation:=input(colored('enter which resulation video you wanna download?','yellow'))).isdigit() or not 1<=int(resulation)<=num:
+            print(colored('please type within in givin option :)','red'))
+            
+        path=valid_path_name(default_path,video_title+useful_data[int(resulation)-1][1])
         
-        if not useful_data[int(resulation)-1][2]:
-            print(colored('video downloading started :)..','blue'))
-            with NamedTemporaryFile(delete=False,dir=default_path) as video_file:
-                response=download_file_with_resume(useful_data[int(resulation)-1][0],video_file.name)
-            if response:pass
-            else:
-                _=input(colored('failed to download the video please try again with differnt resultion "tap enter to continue"','red'))
-                os.unlink(video_file.name);return None
-            print(colored('music downloading started :)..','blue'))
-            with NamedTemporaryFile(delete=False,dir=default_path) as audio_file:
-                response=handeking_error_while_downloading_music(dict1,'3','mp3',audio_file.name,attempt_to_download=2)
-            if response:pass
-            else:
-                _=input(colored('failed to download the music please try again with differnt resultion "tap enter to continue"','red'))
-                os.unlink(audio_file.name);os.unlink(video_file.name);return None
-                
-            add_audio_to_video(video_file.name,audio_file.name,ffmpeg_path,path)
-            os.unlink(audio_file.name)
-            os.unlink(video_file.name)
-            print(colored('file saved in path :- '+str(path),'yellow'))
+        response=video_downloader_youtube(useful_data[int(resulation)-1][2],useful_data[int(resulation)-1][0],dict1,2,path,ffmpeg_path)
+        if response :
+            print(colored("downloading_commpleted file saved in path:0 "+str(path),'yellow'))
         else:
-            print(colored('video downloaded started :)..','blue'))
-            response=download_file_with_resume(useful_data[int(resulation)-1][0],path)
-            if not response:
-                os.unlink(path)
-                print(colored("there is some error - try dwonloading with differnt resulation :("))
-            else:
-                print(colored("downloading_commpleted file saved in path:0 "+str(path),'yellow'))
-    def playlist_video_downloader():
-        logo(stop=False,clear=True)
-        link=input(colored("enter the playlist link(^-^) ","yellow"))
-        playlist=YOUTUBE(link)
+            print(colored("there is some error - try dwonloading with differnt resulation :(","red"))
         
-        get_all_video_id=playlist.playlist.extract_video_id()
-        if get_all_video_id is None:_=input(colored("there is some error while facturing data try after sometime:)",'red'));return None
-        print(colored('='*60,'cyan')+colored('\nplaylist name:- ','blue')+(title_playlist:=playlist.playlist.get_title_of_playlist())+colored('   total_videos  ','blue')+playlist.playlist.get_size_of_playlist()+colored('\n'+'='*60,'cyan'))
-        print(colored('selcting low resulation like 144p and 240p may couse error :)','red'))
-        while not (resulation:=input(colored('enter resulation [144p,240p,*360p*,480p,*720p*,1080p,1440p,2160p] for downlaoding -> ','blue'))) in ('144p','240p','360p','480p','720p','1080p','1440p','2160p'):print(colored('wrong input plese select resulation in the given list','red'))
+        
+    def playlist_video_downloader():
+        '''
+        Downloads videos from a YouTube playlist.
+
+        It retrieves all video IDs and titles from a YouTube playlist and provides an option to download videos in a specified resolution.
+        
+        Args:
+            None
+
+        Returns:
+            None
+        '''
+        get_all_video_id,title_playlist=getting_video_info_youtube(video=False)
+        
+        while not (resulation:=input(colored('enter resulation [144p,240p,*360p*,480p,*720p*,1080p,1440p,2160p] for downlaoding -> ','blue'))) in ('144p','240p','360p','480p','720p','1080p','1440p','2160p'):
+            print(colored('wrong input plese select resulation in the given list','red'))
         
         playlist_saving_dir=valid_dir_name(default_path,title_playlist)
         os.mkdir(playlist_saving_dir)
         
         for num,id in enumerate(get_all_video_id,start=1):
             link=f'https://www.youtube.com/watch?v={id}'
+            
             new_youtube_obj=YOUTUBE(link)
             dict1=get_video_info(new_youtube_obj)
-            if dict1 is None:
-                print(colored("="*80,"yellow")+'\n'+colored(f'[ {num} ] there is some error while dwonloading the file try diffrent resulation :(','red'))
-                print(colored(f"title: {new_youtube_obj.YouTube.title()}\nlink: {link}",'blue')+'\n'+colored("="*80,"yellow"))
-                continue
-            data_got=get_video_link_by_resulation(dict1,resulation,'mp4')
-            if data_got is None:_=input(colored("there is some errro please try another time "));return None
-            link=data_got[0][0]
-            print(colored("="*80,"yellow")+'\n'+colored(f"[ {num} ] downloadiing:- {new_youtube_obj.YouTube.title()} size:- {get_size(data_got[0][1])} resulation downlaoding:- {data_got[2]}","blue")+'\n'+colored("="*80,"yellow"))
-            output_path=valid_path_name(playlist_saving_dir,new_youtube_obj.YouTube.title()+'.mp4')
-            if not data_got[1]:
-                print(colored('video downloading started :)..','blue'))
-                with NamedTemporaryFile(delete=False,dir=default_path) as video_file:
-                    response=download_file_with_resume(link,video_file.name)
-                if response:pass
-                else:
-                    _=input(colored('failed to download the video please try again with differnt resultion "tap enter to continue"','red'))
-                    os.unlink(video_file.name);return None
-                print(colored('music downloading started :)..','blue'))
-                with NamedTemporaryFile(delete=False,dir=default_path) as audio_file:
-                    response=handeking_error_while_downloading_music(dict1,'3','mp3',audio_file.name,attempt_to_download=2)
-                if response:pass
-                else:
-                    _=input(colored('failed to download the music please try again with differnt resultion "tap enter to continue"','red'))
-                    os.unlink(audio_file.name);os.unlink(video_file.name);continue
-                add_audio_to_video(video_file.name,audio_file.name,ffmpeg_path,output_path)
-                os.unlink(audio_file.name)
-                os.unlink(video_file.name)
-                print(colored('file saved in path :- '+str(output_path),'yellow'))
-            else:
-                print(colored('video downloaded started :)..','blue'))
-                response=download_file_with_resume(link,output_path)
-                if not response:
-                    os.unlink(output_path)
-                    print(colored("there is some error - try dwonloading with differnt resulation :("))
-                else:
-                    print(colored("downloading_commpleted file saved in path:0 "+str(output_path),'yellow'))
             print(colored("="*80,"yellow"))
+            
+            if dict1 is None:
+                print(colored(f'[ {num} ] there is some error while dwonloading the file try diffrent resulation :(','red'))
+                print(colored(f"title: {new_youtube_obj.YouTube.title()}\nlink: {link}",'blue'))
+                continue
+            
+            output_path=valid_path_name(playlist_saving_dir,new_youtube_obj.YouTube.title()+'.mp4')
+            data_got=get_video_link_by_resulation(dict1,resulation,'mp4')
+            
+            print(colored(f"[ {num} ] downloading:- {new_youtube_obj.YouTube.title()} size:- {get_size(data_got[0][1])} resulation downlaoding:- {data_got[2]}","blue"))
+            response=video_downloader_youtube(data_got[1],data_got[0][0],dict1,2,output_path,ffmpeg_path)
+            
+            if response :
+                print(colored("downloading_commpleted file saved in path:0 "+str(output_path),'yellow'))
+            else:
+                print(colored("there is some error - try dwonloading with differnt resulation :(","red"))
+            
     def playlist_audio_downloaderr():
         """
         Downloads audio files from YouTube playlist.
