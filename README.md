@@ -1,7 +1,7 @@
 
 # PyStreamSaver
 
-**Total Time Invested:** `46 hours`\
+**Total Time Invested:** `64 hours`\
 **Author:** `Akhand Raj`\
 **Contact Info:** [Instagram](https://www.instagram.com/its_just_me_akk)   and  [Personal Instagram](https://www.instagram.com/akki_raj_._)\
 **Email:** [Email Me](mailto:akhandraj764@gmail.com)\
