@@ -40,7 +40,7 @@ for making it check true
 
 **[ ... ]** PIL (Python Imaging Library): *This is now known as Pillow, a Python Imaging Library fork, used for working with images in Python. We will explore alternatives, possibly leveraging ffmpeg.*
 
-**[ ... ]** start working on the Pinterest download section
+**[ → ]** start working on the Pinterest download section
 
 **[ ... ]** Write exception handeling for main.py function
 
