@@ -44,6 +44,8 @@ for making it check true
 
 **[ ... ]** Write exception handeling for main.py function
 
+**[ ... ]** make seting function
+
 ## Future
 
 **[ ... ]** write our own request library

@@ -10,6 +10,7 @@ from youtube import YOUTUBE
 #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!important_variables!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 default_path='C:\\Users\\DELL\\Desktop\\side project'
 ffmpeg_path='C:\\ffmpeg\\ffmpeg-2024-03-11-git-3d1860ec8d-full_build\\bin\\ffmpeg.exe'
+# ffmpeg_path=".\\PyStreamSaver_data\\ffmpeg-2024-03-11-git-3d1860ec8d-full_build\\bin\\ffmpeg.exe"
 
 def logo(clear:bool=True,stop:bool=False)->str:
     '''
