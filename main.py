@@ -1,3 +1,15 @@
+'''
+code writer: akhand raj (akki ^^)
+
+contact info:-
+    - email id  : akhandraj764@gmail.com
+    - git hub   : https://github.com/Akkiraj1234
+    - leet code : https://leetcode.com/akhand_raj/
+
+social media:- 
+    - instagram : https://www.instagram.com/akki_raj_._
+    - instagram : https://www.instagram.com/its_just_me_akki/
+'''
 from tempfile import NamedTemporaryFile
 from io import BytesIO
 import subprocess
