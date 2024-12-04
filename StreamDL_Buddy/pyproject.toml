@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "streamdl-buddy"
+version = "0.1.0"
+description = "Graphical interface for managing media downloads."
+authors = ["Akhand Raj <akhandr153@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
