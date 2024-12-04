@@ -1,7 +1,7 @@
 /venv
 
-/PyStreamSaver_data
-
 /__pycache__
 
 /streamdl/.stream_env
+
+/data
