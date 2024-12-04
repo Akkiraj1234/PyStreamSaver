@@ -37,9 +37,9 @@ PyStreamProject is a Python-based project designed to download multimedia conten
 - Enhanced user interface
 - Support Gui interface
 
-## Contribution
+<!-- ## Contribution
 
-Contributions to PyStreamProject are welcome! Feel free to fork the repository, make improvements, and submit pull requests.
+Contributions to PyStreamProject are welcome! Feel free to fork the repository, make improvements, and submit pull requests. -->
 
 <!-- ## License
 
@@ -48,3 +48,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Disclaimer
 
 PyStreamProject is provided as-is with no guarantees. Use it responsibly and respect the terms of service of the websites from which you download content.
+
+## License
+
+This project is licensed under the following licenses:
+
+- The **streamdl Package** is licensed under the [Proprietary License](LICENSE).
+- The **StreamDL_Buddy/StreamDL_CLI** are licensed under a [Proprietary License](LICENSE).
+
+See the [LICENSE](LICENSE) file for more details.
+

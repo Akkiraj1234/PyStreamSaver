@@ -1,14 +1,13 @@
 [tool.poetry]
 name = "pystreamsaver"
 version = "0.1.0"
-description = ""
+description = "StreamSaver application with CLI and GUI"
 authors = ["Akhand raj <akhandr153@gmail.com>"]
+license = "Proprietary"
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+poetry = "^1.8.4"
+yapf = "^0.43.0"
+pytest = "^8.3.4"

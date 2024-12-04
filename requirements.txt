@@ -29,7 +29,6 @@ pyproject_hooks==1.2.0
 pytest==8.3.4
 pywin32-ctypes==0.2.3
 RapidFuzz==3.10.1
-requests==2.32.3
 requests-toolbelt==1.0.0
 shellingham==1.5.4
 tomlkit==0.13.2
