@@ -2,6 +2,12 @@
 
 /__pycache__
 
+/data
+
 /streamdl/.stream_env
 
-/data
+/streamdl/src/streamdl/__pycache__
+
+/streamdl/src/streamdl/StreamScraper/__pycache__
+
+/streamdl/src/streamdl/youtubedl/__pycache__
